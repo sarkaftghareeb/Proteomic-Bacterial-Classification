@@ -1,16 +1,22 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, roc_curve, auc
+from sklearn.preprocessing import MinMaxScaler
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
+from sklearn.decomposition import PCA
 
 # Set random seed for reproducibility
 np.random.seed(42)
-
-# Parameters for synthetic data generation
+# Parameters for  data
 num_samples = 500  # Number of samples (bacterial strains)
 num_features = 128  # Number of m/z features per sample
 m_z_range = (3, 30)  # m/z range from 3 kDa to 30 kDa
 
-# Generate synthetic mass-to-charge ratios (m/z values)
+#   mass-to-charge ratios (m/z values)
 m_z_values = np.linspace(m_z_range[0], m_z_range[1], num_features)
 
 # Simulate intensity values (random values for simplicity)
@@ -18,7 +24,6 @@ def generate_intensity():
     # Generate intensity values based on a normal distribution
     return np.random.normal(loc=1000, scale=500, size=num_features)
 
-# Create synthetic dataset
 data = []
 labels = []
 
@@ -46,14 +51,8 @@ else:
 # Show first few rows of the synthetic dataset
 print(df.head())
 ########### bacteria classificatio
-
-
-from sklearn.preprocessing import MinMaxScaler
-import numpy as np
-
 # Initialize the MinMaxScaler
 scaler = MinMaxScaler()
-
 # Normalize the features (m/z values and intensities)
 X = df.drop(columns=['class']).values  # Features (m/z values)
 y = df['class'].values  # Labels (bacterial species)
@@ -67,17 +66,6 @@ X_train, X_temp, y_train, y_temp = train_test_split(X_scaled, y, test_size=0.2, 
 X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
 #####Artificial Neural Network (ANN) Setup and Training:
-    
-pip install tensorflow
-
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.optimizers import Adam
-
 # Build the MLP ANN model
 model = Sequential()
 model.add(Dense(64, input_dim=X_train.shape[1], activation='relu'))  # First hidden layer (64 neurons)
@@ -90,9 +78,6 @@ model.compile(optimizer=Adam(), loss='sparse_categorical_crossentropy', metrics=
 # Train the model
 history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=50, batch_size=32, verbose=1)
 ####Dimensionality Reduction and Feature Selection:
-
-from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
 
 # Apply PCA for dimensionality reduction (2 components for visualization)
 pca = PCA(n_components=2)
@@ -112,7 +97,7 @@ weights = model.get_weights()[0]  # Weights from the first hidden layer
 importance = np.abs(weights).sum(axis=1)  # Sum the absolute values of weights for each feature
 top_features = np.argsort(importance)[-30:]  # Select top 30 features based on their importance
 #######Model Validation:
-from sklearn.metrics import accuracy_score, roc_curve, auc
+
 
 # Predict on the test set
 y_pred = model.predict(X_test)
@@ -136,5 +121,3 @@ plt.legend(loc='lower right')
 plt.show()
 #######
 
-!git status
-!git push
